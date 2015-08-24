@@ -21,14 +21,27 @@ import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.ImageView;
+import android.widget.Toast;
 
+import com.android.ted.gank.model.DayGoodsResult;
+import com.android.ted.gank.model.GoodsResult;
+import com.android.ted.gank.network.GankCloudApi;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
+import com.orhanobut.logger.Logger;
+
+import rx.Observer;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class CheeseDetailActivity extends AppCompatActivity {
 
     public static final String EXTRA_NAME = "cheese_name";
+    private GankCloudApi mGankCloudApi;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -47,10 +60,12 @@ public class CheeseDetailActivity extends AppCompatActivity {
         collapsingToolbar.setTitle(cheeseName);
 
         loadBackdrop();
+        mGankCloudApi = new GankCloudApi();
     }
 
     private void loadBackdrop() {
         final ImageView imageView = (ImageView) findViewById(R.id.backdrop);
+        BitmapPool pool = Glide.get(this).getBitmapPool();
         Glide.with(this).load(Cheeses.getRandomCheeseDrawable()).centerCrop().into(imageView);
     }
 
@@ -59,4 +74,55 @@ public class CheeseDetailActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.sample_actions, menu);
         return true;
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        mGankCloudApi.getGoodsByDay(2015,8,10).cache().subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(getAndroidGoodsObserver);
+        return super.onOptionsItemSelected(item);
+    }
+
+    private Observer<DayGoodsResult> getAndroidGoodsObserver = new Observer<DayGoodsResult>() {
+        @Override
+        public void onNext(final DayGoodsResult goodsResult) {
+            if(null != goodsResult && null != goodsResult.getResults()){
+                //mImageListInfo = imageListInfoResults.getResults().get(0);
+            }
+        }
+
+        @Override
+        public void onCompleted() {
+            //getNewPhotos();
+        }
+
+        @Override
+        public void onError(final Throwable error) {
+            Toast.makeText(CheeseDetailActivity.this,"onError",Toast.LENGTH_SHORT).show();
+//            if (error instanceof RetrofitError) {
+//                RetrofitError e = (RetrofitError) error;
+//                if (e.getKind() == RetrofitError.Kind.NETWORK) {
+//                    mImagesErrorView.setErrorTitle(R.string.error_network);
+//                    mImagesErrorView.setErrorSubtitle(R.string.error_network_subtitle);
+//                } else if (e.getKind() == RetrofitError.Kind.HTTP) {
+//                    mImagesErrorView.setErrorTitle(R.string.error_server);
+//                    mImagesErrorView.setErrorSubtitle(R.string.error_server_subtitle);
+//                } else {
+//                    mImagesErrorView.setErrorTitle(R.string.error_uncommon);
+//                    mImagesErrorView.setErrorSubtitle(R.string.error_uncommon_subtitle);
+//                }
+//            }
+//
+//            mImagesProgress.setVisibility(View.GONE);
+//            mImageRecycler.setVisibility(View.GONE);
+//            mImagesErrorView.setVisibility(View.VISIBLE);
+//
+//            mImagesErrorView.setOnRetryListener(new RetryListener() {
+//                @Override
+//                public void onRetry() {
+//                    getImageListInfo();
+//                }
+//            });
+        }
+    };
 }

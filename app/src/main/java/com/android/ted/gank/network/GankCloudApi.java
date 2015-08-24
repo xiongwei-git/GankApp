@@ -3,6 +3,7 @@ package com.android.ted.gank.network;
 
 import com.android.ted.gank.GankApplication;
 import com.android.ted.gank.config.Constants;
+import com.android.ted.gank.model.DayGoodsResult;
 import com.android.ted.gank.model.GoodsResult;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -20,8 +21,20 @@ import retrofit.http.Path;
 import rx.Observable;
 
 public class GankCloudApi {
+    public static GankCloudApi instance;
 
-    /**每次加载条目*/
+    public static GankCloudApi getIns() {
+        if (null == instance) {
+            synchronized (GankCloudApi.class) {
+                if (null == instance) {
+                    instance = new GankCloudApi();
+                }
+            }
+        }
+        return instance;
+    }
+
+    /**最大加载条目*/
     public static final int LOAD_LIMIT = 100;
 
     public static final String ENDPOINT = Constants.GANK_SERVER_IP;
@@ -29,6 +42,8 @@ public class GankCloudApi {
     private final GankCloudService mWebService;
 
     public static Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
+
+
 
     public GankCloudApi() {
         Cache cache;
@@ -39,6 +54,7 @@ public class GankCloudApi {
             okHttpClient = new OkHttpClient();
             okHttpClient.setCache(cache);
         } catch (Exception e) {
+
         }
 
         RestAdapter restAdapter = new RestAdapter.Builder()
@@ -85,7 +101,7 @@ public class GankCloudApi {
         );
 
         @GET("/day/{year}/{month}/{day}")
-        Observable<GoodsResult> getGoodsByDay(
+        Observable<DayGoodsResult> getGoodsByDay(
                 @Path("year") int year,
                 @Path("month") int month,
                 @Path("day") int day
@@ -106,6 +122,10 @@ public class GankCloudApi {
 
     public Observable<GoodsResult> getBenefitsGoods(int limit, int page) {
         return mWebService.getBenefitsGoods(limit, page);
+    }
+
+    public Observable<DayGoodsResult> getGoodsByDay(int year,int month,int day) {
+        return mWebService.getGoodsByDay(year, month,day);
     }
 
 }

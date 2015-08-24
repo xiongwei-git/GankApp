@@ -17,7 +17,7 @@
         android:name=".GankApplication"
         android:theme="@style/Theme.DesignDemo" >
 
-        <activity android:name="com.android.ted.gank.MainActivity">
+        <activity android:name=".main.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -26,9 +26,9 @@
         </activity>
 
         <activity android:name="com.android.ted.gank.CheeseDetailActivity"
-            android:parentActivityName="com.android.ted.gank.MainActivity">
+            android:parentActivityName=".main.MainActivity">
             <meta-data android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.android.ted.gank.MainActivity" />
+                android:value=".main.MainActivity" />
         </activity>
     </application>
 

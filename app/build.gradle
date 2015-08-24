@@ -37,4 +37,6 @@ dependencies {
     compile 'com.squareup.okhttp:okhttp:2.2.0'
     compile 'com.squareup.okhttp:okhttp-urlconnection:2.2.0'
     compile 'io.reactivex:rxandroid:0.24.0'
+    compile 'com.orhanobut:logger:1.11'
+    compile 'com.jakewharton:butterknife:7.0.1'
 }

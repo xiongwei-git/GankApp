@@ -20,29 +20,26 @@
         <item
             android:id="@+id/nav_home"
             android:icon="@drawable/ic_dashboard"
-            android:title="Home" />
+            android:title="分类浏览" />
         <item
             android:id="@+id/nav_messages"
             android:icon="@drawable/ic_event"
-            android:title="Messages" />
-        <item
-            android:id="@+id/nav_friends"
-            android:icon="@drawable/ic_headset"
-            android:title="Friends" />
+            android:title="时间浏览" />
+
         <item
             android:id="@+id/nav_discussion"
             android:icon="@drawable/ic_forum"
-            android:title="Discussion" />
+            android:title="我的收藏" />
     </group>
 
-    <item android:title="Sub items">
+    <item android:title="Other">
         <menu>
             <item
-                android:icon="@drawable/ic_dashboard"
-                android:title="Sub item 1" />
+                android:icon="@drawable/github_logo"
+                android:title="应用源码" />
             <item
                 android:icon="@drawable/ic_forum"
-                android:title="Sub item 2" />
+                android:title="关于作者" />
         </menu>
     </item>
 

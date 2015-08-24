@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.ted.gank;
+package com.android.ted.gank.main;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -35,6 +35,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.android.ted.gank.CheeseListFragment;
+import com.android.ted.gank.R;
+import com.android.ted.gank.data.ImageGoodsCache;
 import com.android.ted.gank.model.GoodsResult;
 import com.android.ted.gank.network.GankCloudApi;
 
@@ -50,7 +53,35 @@ import rx.schedulers.Schedulers;
 public class MainActivity extends AppCompatActivity {
 
     private DrawerLayout mDrawerLayout;
-    private GankCloudApi mGankCloudApi;
+
+    /***
+     * 获取福利图的回调接口，拿到数据用来做背景
+     */
+    private Observer<GoodsResult> getImageGoodsObserver = new Observer<GoodsResult>() {
+        @Override
+        public void onNext(final GoodsResult goodsResult) {
+            if (null != goodsResult && null != goodsResult.getResults()) {
+                ImageGoodsCache.getIns().addAllImageGoods(goodsResult.getResults());
+            }
+        }
+
+        @Override
+        public void onCompleted() {
+
+        }
+
+        @Override
+        public void onError(final Throwable error) {
+            if (error instanceof RetrofitError) {
+                RetrofitError e = (RetrofitError) error;
+                if (e.getKind() == RetrofitError.Kind.NETWORK) {
+                } else if (e.getKind() == RetrofitError.Kind.HTTP) {
+                } else {
+                }
+            }
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,10 +119,7 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
-        mGankCloudApi = new GankCloudApi();
-        mGankCloudApi.getAndroidGoods(1,1).cache().subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(getAndroidGoodsObserver);
+        loadAllImageGoods();
     }
 
     @Override
@@ -111,96 +139,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupViewPager(ViewPager viewPager) {
-        Adapter adapter = new Adapter(getSupportFragmentManager());
-        adapter.addFragment(new CheeseListFragment(), "Category 1");
-        adapter.addFragment(new CheeseListFragment(), "Category 2");
-        adapter.addFragment(new CheeseListFragment(), "Category 3");
+        MainFragmentPagerAdapter adapter = new MainFragmentPagerAdapter(getSupportFragmentManager());
+        adapter.addFragment(new CheeseListFragment(), "Android");
+        adapter.addFragment(new CheeseListFragment(), "IOS");
+        adapter.addFragment(new CheeseListFragment(), "福利");
         viewPager.setAdapter(adapter);
     }
 
     private void setupDrawerContent(NavigationView navigationView) {
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(MenuItem menuItem) {
-                menuItem.setChecked(true);
-                mDrawerLayout.closeDrawers();
-                return true;
-            }
-        });
+                    @Override
+                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+                        menuItem.setChecked(true);
+                        mDrawerLayout.closeDrawers();
+                        return true;
+                    }
+                });
     }
 
-    static class Adapter extends FragmentPagerAdapter {
-        private final List<Fragment> mFragments = new ArrayList<>();
-        private final List<String> mFragmentTitles = new ArrayList<>();
-
-        public Adapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        public void addFragment(Fragment fragment, String title) {
-            mFragments.add(fragment);
-            mFragmentTitles.add(title);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            return mFragments.get(position);
-        }
-
-        @Override
-        public int getCount() {
-            return mFragments.size();
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            return mFragmentTitles.get(position);
-        }
+    private void loadAllImageGoods(){
+        GankCloudApi.getIns()
+                .getBenefitsGoods(GankCloudApi.LOAD_LIMIT, 1)
+                .cache()
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(getImageGoodsObserver);
     }
 
-    private Observer<GoodsResult> getAndroidGoodsObserver = new Observer<GoodsResult>() {
-        @Override
-        public void onNext(final GoodsResult goodsResult) {
-            if(null != goodsResult && null != goodsResult.getResults()){
-                //mImageListInfo = imageListInfoResults.getResults().get(0);
-            }
-            Toast.makeText(MainActivity.this,"OnNext",Toast.LENGTH_SHORT).show();
-        }
-
-        @Override
-        public void onCompleted() {
-            //getNewPhotos();
-            Toast.makeText(MainActivity.this,"onCompleted",Toast.LENGTH_SHORT).show();
-        }
-
-        @Override
-        public void onError(final Throwable error) {
-            Toast.makeText(MainActivity.this,"onError",Toast.LENGTH_SHORT).show();
-//            if (error instanceof RetrofitError) {
-//                RetrofitError e = (RetrofitError) error;
-//                if (e.getKind() == RetrofitError.Kind.NETWORK) {
-//                    mImagesErrorView.setErrorTitle(R.string.error_network);
-//                    mImagesErrorView.setErrorSubtitle(R.string.error_network_subtitle);
-//                } else if (e.getKind() == RetrofitError.Kind.HTTP) {
-//                    mImagesErrorView.setErrorTitle(R.string.error_server);
-//                    mImagesErrorView.setErrorSubtitle(R.string.error_server_subtitle);
-//                } else {
-//                    mImagesErrorView.setErrorTitle(R.string.error_uncommon);
-//                    mImagesErrorView.setErrorSubtitle(R.string.error_uncommon_subtitle);
-//                }
-//            }
-//
-//            mImagesProgress.setVisibility(View.GONE);
-//            mImageRecycler.setVisibility(View.GONE);
-//            mImagesErrorView.setVisibility(View.VISIBLE);
-//
-//            mImagesErrorView.setOnRetryListener(new RetryListener() {
-//                @Override
-//                public void onRetry() {
-//                    getImageListInfo();
-//                }
-//            });
-        }
-    };
 }
