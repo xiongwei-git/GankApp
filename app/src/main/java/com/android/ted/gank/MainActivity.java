@@ -33,14 +33,24 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
+
+import com.android.ted.gank.model.GoodsResult;
+import com.android.ted.gank.network.GankCloudApi;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit.RetrofitError;
+import rx.Observer;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 
 public class MainActivity extends AppCompatActivity {
 
     private DrawerLayout mDrawerLayout;
+    private GankCloudApi mGankCloudApi;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +87,11 @@ public class MainActivity extends AppCompatActivity {
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
+
+        mGankCloudApi = new GankCloudApi();
+        mGankCloudApi.getAndroidGoods(1,1).cache().subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(getAndroidGoodsObserver);
     }
 
     @Override
@@ -143,4 +158,49 @@ public class MainActivity extends AppCompatActivity {
             return mFragmentTitles.get(position);
         }
     }
+
+    private Observer<GoodsResult> getAndroidGoodsObserver = new Observer<GoodsResult>() {
+        @Override
+        public void onNext(final GoodsResult goodsResult) {
+            if(null != goodsResult && null != goodsResult.getResults()){
+                //mImageListInfo = imageListInfoResults.getResults().get(0);
+            }
+            Toast.makeText(MainActivity.this,"OnNext",Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onCompleted() {
+            //getNewPhotos();
+            Toast.makeText(MainActivity.this,"onCompleted",Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onError(final Throwable error) {
+            Toast.makeText(MainActivity.this,"onError",Toast.LENGTH_SHORT).show();
+//            if (error instanceof RetrofitError) {
+//                RetrofitError e = (RetrofitError) error;
+//                if (e.getKind() == RetrofitError.Kind.NETWORK) {
+//                    mImagesErrorView.setErrorTitle(R.string.error_network);
+//                    mImagesErrorView.setErrorSubtitle(R.string.error_network_subtitle);
+//                } else if (e.getKind() == RetrofitError.Kind.HTTP) {
+//                    mImagesErrorView.setErrorTitle(R.string.error_server);
+//                    mImagesErrorView.setErrorSubtitle(R.string.error_server_subtitle);
+//                } else {
+//                    mImagesErrorView.setErrorTitle(R.string.error_uncommon);
+//                    mImagesErrorView.setErrorSubtitle(R.string.error_uncommon_subtitle);
+//                }
+//            }
+//
+//            mImagesProgress.setVisibility(View.GONE);
+//            mImageRecycler.setVisibility(View.GONE);
+//            mImagesErrorView.setVisibility(View.VISIBLE);
+//
+//            mImagesErrorView.setOnRetryListener(new RetryListener() {
+//                @Override
+//                public void onRetry() {
+//                    getImageListInfo();
+//                }
+//            });
+        }
+    };
 }
