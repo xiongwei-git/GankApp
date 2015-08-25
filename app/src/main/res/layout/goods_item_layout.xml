@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?><!-- item_feed.xml -->
-<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+<android.support.v7.widget.CardView
     android:id="@+id/card_view"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="200dp"
     android:layout_gravity="center"
@@ -11,21 +12,63 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="45dp"
         android:orientation="vertical">
 
         <ImageView
             android:layout_width="match_parent"
-            android:layout_marginBottom="20dp"
+            android:layout_height="match_parent"
             android:scaleType="centerCrop"
-            android:src="@drawable/item_default_img"
-            android:layout_height="match_parent"/>
+            android:src="@drawable/item_default_img"/>
 
         <TextView
-            android:text="xiongwei"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
             android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="5dp"
+            android:gravity="center_vertical"
+            android:text="图：熊伟"
+            android:textColor="#fff"
+            android:textSize="12sp"/>
+
+        <TextView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_margin="10dp"
+            android:gravity="center"
+            android:text="#快速尝试各种lib的demo"
+            android:textColor="#fff"
+            android:textSize="25sp"
+            android:textStyle="bold"/>
+
 
     </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_gravity="bottom"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:src="@drawable/ic_heart_outline_grey"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
+            android:gravity="right"
+            android:text="熊伟 提供于2015-08-04"
+            android:textSize="15dp"
+            android:textStyle="normal"/>
+    </LinearLayout>
 
 </android.support.v7.widget.CardView>

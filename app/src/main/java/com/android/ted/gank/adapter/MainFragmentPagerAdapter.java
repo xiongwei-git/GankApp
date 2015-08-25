@@ -1,4 +1,4 @@
-package com.android.ted.gank.main;
+package com.android.ted.gank.adapter;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
