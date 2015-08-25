@@ -25,7 +25,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="com.android.ted.gank.CheeseDetailActivity"
+        <activity android:name=".bak.CheeseDetailActivity"
             android:parentActivityName=".main.MainActivity">
             <meta-data android:name="android.support.PARENT_ACTIVITY"
                 android:value=".main.MainActivity" />

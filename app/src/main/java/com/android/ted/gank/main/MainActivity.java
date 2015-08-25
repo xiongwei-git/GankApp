@@ -31,7 +31,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.android.ted.gank.CheeseListFragment;
 import com.android.ted.gank.R;
 import com.android.ted.gank.adapter.MainFragmentPagerAdapter;
 import com.android.ted.gank.data.ImageGoodsCache;
@@ -134,9 +133,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupViewPager(ViewPager viewPager) {
         MainFragmentPagerAdapter adapter = new MainFragmentPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(new CheeseListFragment(), "Android");
-        adapter.addFragment(new CheeseListFragment(), "IOS");
-        adapter.addFragment(new CheeseListFragment(), "福利");
+        adapter.addFragment(new AndroidGoodsListFragment(), "Android");
+        adapter.addFragment(new IosGoodsListFragment(), "IOS");
+        adapter.addFragment(new BenefitListFragment(), "福利");
         viewPager.setAdapter(adapter);
     }
 

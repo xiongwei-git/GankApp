@@ -4,7 +4,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="200dp"
+    android:layout_height="240dp"
     android:layout_gravity="center"
     android:layout_margin="8dp"
     card_view:cardCornerRadius="4dp">
@@ -16,31 +16,34 @@
         android:orientation="vertical">
 
         <ImageView
+            android:id="@+id/img_goods_img"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
             android:src="@drawable/item_default_img"/>
 
         <TextView
+            android:id="@+id/txt_img_author"
             android:layout_width="wrap_content"
             android:layout_height="20dp"
             android:layout_alignParentBottom="true"
             android:layout_alignParentRight="true"
-            android:layout_marginRight="5dp"
+            android:layout_marginRight="10dp"
             android:gravity="center_vertical"
             android:text="图：熊伟"
             android:textColor="#fff"
             android:textSize="12sp"/>
 
         <TextView
+            android:id="@+id/txt_goods_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:layout_margin="10dp"
             android:gravity="center"
-            android:text="#快速尝试各种lib的demo"
             android:textColor="#fff"
-            android:textSize="25sp"
+            android:text="#快速尝试各种lib的demo"
+            android:textSize="24sp"
             android:textStyle="bold"/>
 
 
@@ -53,21 +56,21 @@
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
-
-
         <ImageView
+            android:id="@+id/img_like_goods"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
+            android:layout_marginLeft="10dp"
             android:src="@drawable/ic_heart_outline_grey"/>
 
         <TextView
+            android:id="@+id/txt_goods_author"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginRight="5dp"
+            android:layout_marginRight="10dp"
             android:gravity="right"
             android:text="熊伟 提供于2015-08-04"
-            android:textSize="15dp"
+            android:textSize="13sp"
             android:textStyle="normal"/>
     </LinearLayout>
 

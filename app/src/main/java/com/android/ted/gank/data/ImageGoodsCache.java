@@ -3,6 +3,7 @@ package com.android.ted.gank.data;
 import com.android.ted.gank.model.Goods;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * Created by Ted on 2015/8/24.
@@ -45,5 +46,16 @@ public class ImageGoodsCache {
 
     public ArrayList<Goods> getGankImageList() {
         return mGankImageList;
+    }
+
+    public Goods getImgGoodsRandom(int randomIndex){
+        int size = getGankImageList().size();
+        if(size == 0)return null;
+        Random random = new Random();
+        int randomInt = random.nextInt(size);
+        if(randomInt + randomIndex >= size){
+            return getGankImageList().get(randomInt);
+        }
+        return getGankImageList().get(randomInt + randomIndex);
     }
 }
