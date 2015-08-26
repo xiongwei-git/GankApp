@@ -10,6 +10,13 @@
     <uses-permission android:name="android.permission.READ_LOGS"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
+    <permission
+        android:name="com.android.ted.ACCESS_UPDATE_RESULT"
+        android:protectionLevel="signature" />
+
+    <uses-permission android:name="com.android.ted.ACCESS_UPDATE_RESULT" />
+
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -30,6 +37,9 @@
             <meta-data android:name="android.support.PARENT_ACTIVITY"
                 android:value=".main.MainActivity" />
         </activity>
+
+        <service android:name=".service.ImageImproveService" />
     </application>
+
 
 </manifest>

@@ -21,11 +21,13 @@ android {
 
 repositories {
     jcenter()
+    maven {
+        url 'http://oss.jfrog.org/artifactory/oss-snapshot-local'
+    }
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:23.0.0'
     compile 'com.android.support:design:23.0.0'
     compile 'com.android.support:appcompat-v7:23.0.0'
     compile 'com.android.support:cardview-v7:23.0.0'
@@ -39,4 +41,5 @@ dependencies {
     compile 'io.reactivex:rxandroid:0.24.0'
     compile 'com.orhanobut:logger:1.11'
     compile 'com.jakewharton:butterknife:7.0.1'
+    compile 'io.realm:realm-android:0.83.0-SNAPSHOT'
 }
