@@ -1,3 +1,21 @@
+
+/*
+ *    Copyright 2015 TedXiong <xiong-wei@hotmail.com>
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ *
+ */
+
 package com.android.ted.gank.db;
 
 import com.android.ted.gank.model.Goods;
@@ -5,71 +23,62 @@ import com.android.ted.gank.model.Goods;
 import io.realm.Realm;
 import io.realm.RealmObject;
 import io.realm.RealmResults;
+import io.realm.annotations.PrimaryKey;
 
 /**
- * Created by Ted on 2015/8/26.
+ * Created by Ted on 2015/8/23.
+ *
+ * DB Item for Image {@link com.android.ted.gank.model.Goods}
  */
-public class Image extends RealmObject{
+public class Image extends RealmObject {
     /**补充数据*/
     private int width = 0;
     private int height = 0;
     private int position = 0;
 
-    /**原始数据*/
+    @PrimaryKey
+    private String objectId;
+
     private String who;
     private String publishedAt;
     private String desc;
     private String type;
     private String url;
     private boolean used;
-    private String objectId;
+
     private String createdAt;
     private String updatedAt;
 
-    public static Image queryOrCreate(Realm realm,Goods goods){
-        RealmResults<Image> results =  realm.where(Image.class).equalTo("objectId",goods.getObjectId()).findAll();
+    public static Image queryImageById(Realm realm,String objectId){
+        RealmResults<Image> results =  realm.where(Image.class).equalTo("objectId",objectId).findAll();
         if(results.size() > 0){
-            return results.get(0);
+            Image image = results.get(0);
+            return image;
         }
-        return transformGoods(goods);
+        return null;
     }
 
-    public static Image transformGoods(Goods goods){
-        Image image = new Image();
-        image.setWho(goods.getWho());
-        image.setPublishedAt(goods.getPublishedAt());
-        image.setDesc(goods.getDesc());
-        image.setType(goods.getType());
-        image.setUrl(goods.getUrl());
-        image.setUsed(goods.isUsed());
-        image.setObjectId(goods.getObjectId());
-        image.setCreatedAt(goods.getCreatedAt());
-        image.setUpdatedAt(goods.getUpdatedAt());
-        return image;
+    public static Image queryFirstZeroImg(Realm realm){
+        RealmResults<Image> results =  realm.where(Image.class).equalTo("width",0)
+                .findAllSorted("position", RealmResults.SORT_ORDER_DESCENDING);
+        if(results.size() > 0){
+            Image image = results.get(0);
+            return image;
+        }
+        return null;
     }
 
-    public int getWidth() {
-        return width;
-    }
-
-    public void setWidth(int width) {
-        this.width = width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
-    }
-
-    public int getPosition() {
-        return position;
-    }
-
-    public void setPosition(int position) {
-        this.position = position;
+    public static Image updateDbGoods(Image dbItem,Goods goods) {
+        dbItem.setWho(goods.getWho());
+        dbItem.setPublishedAt(goods.getPublishedAt());
+        dbItem.setDesc(goods.getDesc());
+        dbItem.setType(goods.getType());
+        dbItem.setUrl(goods.getUrl());
+        dbItem.setUsed(goods.isUsed());
+        dbItem.setObjectId(goods.getObjectId());
+        dbItem.setCreatedAt(goods.getCreatedAt());
+        dbItem.setUpdatedAt(goods.getUpdatedAt());
+        return dbItem;
     }
 
     public String getWho() {
@@ -144,4 +153,27 @@ public class Image extends RealmObject{
         this.updatedAt = updatedAt;
     }
 
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public int getPosition() {
+        return position;
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
+    }
 }

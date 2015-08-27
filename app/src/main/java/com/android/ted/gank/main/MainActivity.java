@@ -16,27 +16,37 @@
 
 package com.android.ted.gank.main;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.SharedElementCallback;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewTreeObserver;
 
 import com.android.ted.gank.R;
 import com.android.ted.gank.adapter.MainFragmentPagerAdapter;
 import com.android.ted.gank.data.ImageGoodsCache;
+import com.android.ted.gank.db.Image;
 import com.android.ted.gank.model.GoodsResult;
 import com.android.ted.gank.network.GankCloudApi;
 
+import java.util.List;
+import java.util.Map;
+
+import io.realm.Realm;
+import io.realm.RealmResults;
 import retrofit.RetrofitError;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
@@ -46,6 +56,10 @@ import rx.schedulers.Schedulers;
 public class MainActivity extends AppCompatActivity {
 
     private DrawerLayout mDrawerLayout;
+    private Realm mRealm;
+    private Bundle mReenterState;
+    private MainFragmentPagerAdapter mPagerAdapter;
+    private BenefitListFragment mBenefitListFragment;
 
     /***
      * 获取福利图的回调接口，拿到数据用来做背景
@@ -76,10 +90,13 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mRealm = Realm.getInstance(this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -112,6 +129,8 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
+        setExitSharedElementCallback(mSharedElementCallback);
+
         loadAllImageGoods();
     }
 
@@ -131,12 +150,25 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mRealm.close();
+    }
+
+    public Realm getRealm() {
+        if (null == mRealm)
+            mRealm = Realm.getInstance(this);
+        return mRealm;
+    }
+
     private void setupViewPager(ViewPager viewPager) {
-        MainFragmentPagerAdapter adapter = new MainFragmentPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(new AndroidGoodsListFragment(), "Android");
-        adapter.addFragment(new IosGoodsListFragment(), "IOS");
-        adapter.addFragment(new BenefitListFragment(), "福利");
-        viewPager.setAdapter(adapter);
+        mBenefitListFragment = new BenefitListFragment();
+        mPagerAdapter = new MainFragmentPagerAdapter(getSupportFragmentManager());
+        mPagerAdapter.addFragment(new AndroidGoodsListFragment(), "Android");
+        mPagerAdapter.addFragment(new IosGoodsListFragment(), "IOS");
+        mPagerAdapter.addFragment(mBenefitListFragment, "福利");
+        viewPager.setAdapter(mPagerAdapter);
     }
 
     private void setupDrawerContent(NavigationView navigationView) {
@@ -151,13 +183,37 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private void loadAllImageGoods(){
-        GankCloudApi.getIns()
-                .getBenefitsGoods(GankCloudApi.LOAD_LIMIT, 1)
-                .cache()
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(getImageGoodsObserver);
+    private void loadAllImageGoods() {
+        RealmResults<Image> allImage = mRealm.where(Image.class).findAll();
+        if (allImage.size() == 0) {
+            GankCloudApi.getIns()
+                    .getBenefitsGoods(GankCloudApi.LOAD_LIMIT, 1)
+                    .cache()
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(getImageGoodsObserver);
+        } else {
+            ImageGoodsCache.getIns().addAllImageGoods(allImage);
+        }
     }
 
+    private SharedElementCallback mSharedElementCallback = new SharedElementCallback() {
+        @Override
+        public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
+            if (mReenterState != null) {
+                int i = mReenterState.getInt("index", 0);
+                sharedElements.clear();
+                mBenefitListFragment.getActivitySharedElements(i,sharedElements);
+                mReenterState = null;
+            }
+        }
+    };
+
+    @Override
+    public void onActivityReenter(int resultCode, Intent data) {
+        super.onActivityReenter(resultCode, data);
+        supportPostponeEnterTransition();
+        mReenterState = new Bundle(data.getExtras());
+        mBenefitListFragment.onActivityReenter(new Bundle(data.getExtras()));
+    }
 }

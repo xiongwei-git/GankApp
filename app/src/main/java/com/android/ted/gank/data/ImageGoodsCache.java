@@ -1,9 +1,12 @@
 package com.android.ted.gank.data;
 
+import com.android.ted.gank.db.Image;
 import com.android.ted.gank.model.Goods;
 
 import java.util.ArrayList;
 import java.util.Random;
+
+import io.realm.RealmResults;
 
 /**
  * Created by Ted on 2015/8/24.
@@ -12,7 +15,7 @@ import java.util.Random;
 public class ImageGoodsCache {
     private static ImageGoodsCache instance;
 
-    private ArrayList<Goods> mGankImageList;
+    private ArrayList<Image> mGankImageList;
 
     public ImageGoodsCache(){
         mGankImageList = new ArrayList<>();
@@ -29,26 +32,31 @@ public class ImageGoodsCache {
         return instance;
     }
 
-    /***
-     * 新增图片对象
-     * @param image
-     */
-    public void addImageGoods(Goods image){
+    private void addGoodsToImage(Goods goods){
+        Image image = new Image();
+        Image.updateDbGoods(image,goods);
         mGankImageList.add(image);
     }
 
     public void addAllImageGoods(ArrayList<Goods> list){
         if(null != list && list.size() > 0){
             mGankImageList.clear();
-            mGankImageList.addAll(list);
+            for (Goods goods:list){
+                addGoodsToImage(goods);
+            }
         }
     }
 
-    public ArrayList<Goods> getGankImageList() {
+    public void addAllImageGoods(RealmResults<Image> images){
+        mGankImageList.clear();
+        mGankImageList.addAll(images);
+    }
+
+    public ArrayList<Image> getGankImageList() {
         return mGankImageList;
     }
 
-    public Goods getImgGoodsRandom(int randomIndex){
+    public Image getImgGoodsRandom(int randomIndex){
         int size = getGankImageList().size();
         if(size == 0)return null;
         Random random = new Random();

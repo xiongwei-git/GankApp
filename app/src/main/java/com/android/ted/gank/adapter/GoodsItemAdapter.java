@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import com.android.ted.gank.R;
 import com.android.ted.gank.data.ImageGoodsCache;
+import com.android.ted.gank.db.Image;
 import com.android.ted.gank.manager.CollectManager;
 import com.android.ted.gank.model.Goods;
 import com.android.ted.gank.utils.Utils;
@@ -108,7 +109,7 @@ public class GoodsItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     private void bindGoodsItem(int position, CellGoodsViewHolder holder) {
         Goods goods = goodsItemData.get(position);
-        Goods image = ImageGoodsCache.getIns().getImgGoodsRandom(position);
+        Image image = ImageGoodsCache.getIns().getImgGoodsRandom(position);
         boolean hasImg = null != image;
         holder.txtGoodsTitle.setText("#"+goods.getDesc());
         holder.txtImgAuthor.setText(hasImg?"图："+image.getWho():"");
@@ -138,7 +139,7 @@ public class GoodsItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         return builder.toString();
     }
 
-    private void loadGoodsImage(final CellGoodsViewHolder holder,Goods imgGoods){
+    private void loadGoodsImage(final CellGoodsViewHolder holder,Image imgGoods){
         if(null == imgGoods || TextUtils.isEmpty(imgGoods.getUrl())){
             Glide.with(context)
                     .load(R.drawable.item_default_img)

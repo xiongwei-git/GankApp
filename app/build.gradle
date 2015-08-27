@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.android.ted.gank"
-        minSdkVersion 14
+        minSdkVersion 19
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
@@ -16,6 +16,10 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+
+    packagingOptions {
+        exclude 'META-INF/services/javax.annotation.processing.Processor'
     }
 }
 
@@ -41,5 +45,5 @@ dependencies {
     compile 'io.reactivex:rxandroid:0.24.0'
     compile 'com.orhanobut:logger:1.11'
     compile 'com.jakewharton:butterknife:7.0.1'
-    compile 'io.realm:realm-android:0.83.0-SNAPSHOT'
+    compile 'io.realm:realm-android:0.81.1'
 }
