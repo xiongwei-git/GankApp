@@ -95,7 +95,7 @@ public class ImageImproveService extends IntentService{
 
 
     /**
-     * 预解码图片并将抓到的数据保存至数据库
+     * 预解码图片并将抓到的图片尺寸保存至数据库
      *
      * @param realm   Realm 实例
      * @param image 图片

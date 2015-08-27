@@ -34,8 +34,10 @@ public class GankCloudApi {
         return instance;
     }
 
-    /**最大加载条目*/
-    public static final int LOAD_LIMIT = 100;
+    /**每次加载条目*/
+    public static final int LOAD_LIMIT = 20;
+    /**加载起始页面*/
+    public static final int LOAD_STRAT = 1;
 
     public static final String ENDPOINT = Constants.GANK_SERVER_IP;
 

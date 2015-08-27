@@ -1,5 +1,7 @@
 package com.android.ted.gank.db;
 
+import com.android.ted.gank.model.Goods;
+
 import io.realm.Realm;
 import io.realm.RealmObject;
 import io.realm.RealmResults;
@@ -11,7 +13,7 @@ public class Image extends RealmObject{
     /**补充数据*/
     private int width = 0;
     private int height = 0;
-    private int position;
+    private int position = 0;
 
     /**原始数据*/
     private String who;
@@ -24,11 +26,27 @@ public class Image extends RealmObject{
     private String createdAt;
     private String updatedAt;
 
-    public boolean isItemInDb(Realm realm){
-        RealmResults<Image> results =  realm.where(Image.class).equalTo("objectId",getObjectId()).findAll();
-        return results.size() > 0;
+    public static Image queryOrCreate(Realm realm,Goods goods){
+        RealmResults<Image> results =  realm.where(Image.class).equalTo("objectId",goods.getObjectId()).findAll();
+        if(results.size() > 0){
+            return results.get(0);
+        }
+        return transformGoods(goods);
     }
 
+    public static Image transformGoods(Goods goods){
+        Image image = new Image();
+        image.setWho(goods.getWho());
+        image.setPublishedAt(goods.getPublishedAt());
+        image.setDesc(goods.getDesc());
+        image.setType(goods.getType());
+        image.setUrl(goods.getUrl());
+        image.setUsed(goods.isUsed());
+        image.setObjectId(goods.getObjectId());
+        image.setCreatedAt(goods.getCreatedAt());
+        image.setUpdatedAt(goods.getUpdatedAt());
+        return image;
+    }
 
     public int getWidth() {
         return width;
@@ -125,4 +143,5 @@ public class Image extends RealmObject{
     public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
     }
+
 }

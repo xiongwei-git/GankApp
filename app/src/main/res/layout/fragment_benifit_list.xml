@@ -14,10 +14,14 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
+<SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/benefit_swipe_refresh"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-<resources>
-    <color name="window_background">#FFF5F5F5</color>
-    <color name="colorPrimary">#673AB7</color>
-    <color name="colorPrimaryDark">#512DA8</color>
-    <color name="colorAccent">#FF4081</color>
-</resources>
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/benefit_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+</SwipeRefreshLayout>

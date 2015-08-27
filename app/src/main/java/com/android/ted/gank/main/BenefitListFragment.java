@@ -16,57 +16,51 @@
 
 package com.android.ted.gank.main;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
-import com.android.ted.gank.bak.CheeseDetailActivity;
-import com.android.ted.gank.bak.Cheeses;
 import com.android.ted.gank.R;
 import com.android.ted.gank.adapter.GoodsItemAdapter;
+import com.android.ted.gank.db.Image;
 import com.android.ted.gank.model.Goods;
 import com.android.ted.gank.model.GoodsResult;
 import com.android.ted.gank.network.GankCloudApi;
-import com.bumptech.glide.Glide;
+import com.android.ted.gank.service.ImageImproveService;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 
+import io.realm.Realm;
+import io.realm.RealmChangeListener;
 import retrofit.RetrofitError;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
-public class BenefitListFragment extends Fragment {
+public class BenefitListFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener,
+        RealmChangeListener {
     private RecyclerView mRecyclerView;
-    private ArrayList<Goods> mAllAndroidGoods;
-    private GoodsItemAdapter mAndroidItemAdapter;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
+    private ArrayList<Goods> mAllBenefitGoods;
+    private GoodsItemAdapter mBenefitItemAdapter;
+    private Realm mRealm;
 
-    private Observer<GoodsResult> getAndroidGoodsObserver = new Observer<GoodsResult>() {
+    private Observer<GoodsResult> getBenefitGoodsObserver = new Observer<GoodsResult>() {
         @Override
         public void onNext(final GoodsResult goodsResult) {
-            if (null != goodsResult && null != goodsResult.getResults()) {
-                //ImageGoodsCache.getIns().addAllImageGoods(goodsResult.getResults());
-                //setupRecyclerView(mRecyclerView);
-                mAllAndroidGoods.clear();
-                mAllAndroidGoods.addAll(goodsResult.getResults());
-                mAndroidItemAdapter.updateItems(mAllAndroidGoods,true);
-            }
+            analysisNewImage(goodsResult);
         }
 
         @Override
         public void onCompleted() {
-
+            mSwipeRefreshLayout.setRefreshing(false);
+            doImproveJob();
         }
 
         @Override
@@ -86,121 +80,87 @@ public class BenefitListFragment extends Fragment {
     };
 
     @Override
+    public void onRefresh() {
+        reloadBenefitGoods();
+    }
+
+    @Override
+    public void onChange() {
+
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mAllAndroidGoods = new ArrayList<>();
-        mAndroidItemAdapter = new GoodsItemAdapter(getActivity());
+        mAllBenefitGoods = new ArrayList<>();
+        mBenefitItemAdapter = new GoodsItemAdapter(getActivity());
+        mRealm = Realm.getInstance(getActivity());
+        mRealm.addChangeListener(this);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mRecyclerView = (RecyclerView) inflater.inflate(R.layout.fragment_cheese_list, container, false);
-        setupRecyclerView(mRecyclerView);
-        return mRecyclerView;
+        mSwipeRefreshLayout = (SwipeRefreshLayout) inflater.inflate(R.layout.fragment_benifit_list, container, false);
+        mRecyclerView = (RecyclerView)mSwipeRefreshLayout.findViewById(R.id.benefit_recycler_view);
+        setupBaseView();
+        return mSwipeRefreshLayout;
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        loadAllAndroidGoods();
+        reloadBenefitGoods();
     }
 
-    private void loadAllAndroidGoods(){
+    private void reloadBenefitGoods(){
         GankCloudApi.getIns()
-                .getAndroidGoods(GankCloudApi.LOAD_LIMIT, 1)
+                .getBenefitsGoods(GankCloudApi.LOAD_LIMIT, GankCloudApi.LOAD_STRAT)
                 .cache()
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(getAndroidGoodsObserver);
+                .subscribe(getBenefitGoodsObserver);
     }
 
-    private void setupRecyclerView(RecyclerView recyclerView) {
-        recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
-        recyclerView.setAdapter(mAndroidItemAdapter);
+    private void setupBaseView() {
+        mSwipeRefreshLayout.setColorSchemeColors(R.color.colorPrimary,R.color.colorPrimaryDark);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(mRecyclerView.getContext()));
+        mRecyclerView.setAdapter(mBenefitItemAdapter);
     }
 
-
-
-
-    private List<String> getRandomSublist(String[] array, int amount) {
-        ArrayList<String> list = new ArrayList<>(amount);
-        Random random = new Random();
-        while (list.size() < amount) {
-            list.add(array[random.nextInt(array.length)]);
-        }
-        return list;
-    }
-
-    public static class SimpleStringRecyclerViewAdapter
-            extends RecyclerView.Adapter<SimpleStringRecyclerViewAdapter.ViewHolder> {
-
-        private final TypedValue mTypedValue = new TypedValue();
-        private int mBackground;
-        private List<String> mValues;
-
-        public static class ViewHolder extends RecyclerView.ViewHolder {
-            public String mBoundString;
-
-            public final View mView;
-            public final ImageView mImageView;
-            public final TextView mTextView;
-
-            public ViewHolder(View view) {
-                super(view);
-                mView = view;
-                mImageView = (ImageView) view.findViewById(R.id.avatar);
-                mTextView = (TextView) view.findViewById(android.R.id.text1);
+    /***
+     * 分析新的数据
+     * @param goodsResult
+     * @return 是否有新数据插入
+     */
+    private boolean analysisNewImage(final GoodsResult goodsResult){
+        if (null != goodsResult && null != goodsResult.getResults()) {
+            int count = 0;
+            for (Goods goods:goodsResult.getResults()){
+                Image image = Image.queryOrCreate(mRealm, goods);
+                insertImage(image);
             }
 
-            @Override
-            public String toString() {
-                return super.toString() + " '" + mTextView.getText();
-            }
+
+            mAllBenefitGoods.clear();
+            mAllBenefitGoods.addAll(goodsResult.getResults());
+            mBenefitItemAdapter.updateItems(mAllBenefitGoods,true);
         }
-
-        public String getValueAt(int position) {
-            return mValues.get(position);
-        }
-
-        public SimpleStringRecyclerViewAdapter(Context context, List<String> items) {
-            context.getTheme().resolveAttribute(R.attr.selectableItemBackground, mTypedValue, true);
-            mBackground = mTypedValue.resourceId;
-            mValues = items;
-        }
-
-        @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.list_item, parent, false);
-            view.setBackgroundResource(mBackground);
-            return new ViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(final ViewHolder holder, int position) {
-            holder.mBoundString = mValues.get(position);
-            holder.mTextView.setText(mValues.get(position));
-
-            holder.mView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Context context = v.getContext();
-                    Intent intent = new Intent(context, CheeseDetailActivity.class);
-                    intent.putExtra(CheeseDetailActivity.EXTRA_NAME, holder.mBoundString);
-
-                    context.startActivity(intent);
-                }
-            });
-
-            Glide.with(holder.mImageView.getContext())
-                    .load(Cheeses.getRandomCheeseDrawable())
-                    .fitCenter()
-                    .into(holder.mImageView);
-        }
-
-        @Override
-        public int getItemCount() {
-            return mValues.size();
-        }
+        return false;
     }
+
+    private void insertImage(Image image){
+        mRealm.beginTransaction();
+        mRealm.copyToRealmOrUpdate(image);
+        mRealm.commitTransaction();
+    }
+
+
+
+    private void doImproveJob(){
+        Intent intent = new Intent(getActivity(), ImageImproveService.class);
+        intent.setAction(ImageImproveService.ACTION_IMPROVE_IMAGE);
+        getActivity().startService(intent);
+    }
+
 }
