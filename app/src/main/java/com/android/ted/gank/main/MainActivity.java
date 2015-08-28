@@ -17,6 +17,7 @@
 package com.android.ted.gank.main;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -36,11 +37,11 @@ import android.widget.Toast;
 
 import com.android.ted.gank.R;
 import com.android.ted.gank.adapter.MainFragmentPagerAdapter;
+import com.android.ted.gank.config.Constants;
 import com.android.ted.gank.data.ImageGoodsCache;
 import com.android.ted.gank.db.Image;
 import com.android.ted.gank.model.GoodsResult;
 import com.android.ted.gank.network.GankCloudApi;
-import com.orhanobut.logger.Logger;
 
 import java.util.List;
 import java.util.Map;
@@ -156,12 +157,6 @@ public class MainActivity extends AppCompatActivity {
         mRealm.close();
     }
 
-    public Realm getRealm() {
-        if (null == mRealm)
-            mRealm = Realm.getInstance(this);
-        return mRealm;
-    }
-
     private void setupViewPager(ViewPager viewPager) {
         mBenefitListFragment = new BenefitListFragment();
         mPagerAdapter = new MainFragmentPagerAdapter(getSupportFragmentManager());
@@ -192,8 +187,10 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this,"功能开发中",Toast.LENGTH_SHORT).show();
                 break;
             case R.id.nav_code:
+                callWebview(Constants.GITHUB_URL);
                 break;
             case R.id.nav_author:
+                callWebview(Constants.AUTHOR_URL);
                 break;
         }
     }
@@ -230,5 +227,13 @@ public class MainActivity extends AppCompatActivity {
         supportPostponeEnterTransition();
         mReenterState = new Bundle(data.getExtras());
         mBenefitListFragment.onActivityReenter(new Bundle(data.getExtras()));
+    }
+
+    private void callWebview(String url){
+        Intent intent= new Intent();
+        intent.setAction("android.intent.action.VIEW");
+        Uri content_url = Uri.parse(url);
+        intent.setData(content_url);
+        startActivity(intent);
     }
 }

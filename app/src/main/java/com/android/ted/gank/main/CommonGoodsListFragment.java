@@ -63,8 +63,6 @@ public class CommonGoodsListFragment extends Fragment implements SwipeRefreshLay
         return fragment;
     }
 
-
-
     private Observer<GoodsResult> getCommonGoodsObserver = new Observer<GoodsResult>() {
         @Override
         public void onNext(final GoodsResult goodsResult) {

@@ -90,12 +90,10 @@ public abstract class BenefitGoodsItemAdapter extends ArrayRecyclerAdapter<Image
         if (null == imgGoods || TextUtils.isEmpty(imgGoods.getUrl())) {
             Glide.with(context)
                     .load(R.drawable.item_default_img)
-                    .centerCrop()
                     .into(holder.imageView);
         } else {
             Glide.with(context)
                     .load(imgGoods.getUrl())
-                    .centerCrop()
                     .into(holder.imageView);
         }
     }

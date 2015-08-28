@@ -15,4 +15,10 @@ public class Constants {
     //随机数据：http://gank.avosapps.com/api/random/data/分类/个数
     public static final String GANK_RANDOM_IP = "random/data/";
 
+    public static final String GITHUB_URL = "https://github.com/xiongwei-git/GankApp";
+
+    public static final String AUTHOR_URL = "http://www.weibo.com/521213101";
+
+
+
 }

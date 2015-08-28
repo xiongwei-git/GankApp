@@ -27,10 +27,4 @@ import io.realm.Realm;
 public class BaseFragment extends Fragment {
 
 
-    protected Realm getRealm(){
-        if(getActivity() instanceof MainActivity)
-            return ((MainActivity)getActivity()).getRealm();
-        else
-            return Realm.getInstance(getActivity());
-    }
 }

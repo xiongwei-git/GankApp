@@ -134,7 +134,7 @@ public class BenefitListFragment extends BaseFragment implements SwipeRefreshLay
                 startViewerActivity(v,position);
             }
         };
-        mRealm = getRealm();
+        mRealm = Realm.getInstance(getActivity());
         mRealm.addChangeListener(this);
     }
 
