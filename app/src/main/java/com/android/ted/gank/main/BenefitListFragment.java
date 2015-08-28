@@ -172,8 +172,8 @@ public class BenefitListFragment extends BaseFragment implements SwipeRefreshLay
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+    public void onDestroy() {
+        super.onDestroy();
         mRealm.removeChangeListener(this);
         mRealm.close();
     }
