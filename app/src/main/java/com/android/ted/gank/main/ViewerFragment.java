@@ -16,7 +16,9 @@
 
 package com.android.ted.gank.main;
 
-import android.app.Activity;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -28,17 +30,15 @@ import android.view.ViewGroup;
 import com.android.ted.gank.R;
 import com.android.ted.gank.view.TouchImageView;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.orhanobut.logger.Logger;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class ViewerFragment extends Fragment implements RequestListener<String,GlideDrawable> {
-
-    private static final String TAG = "ViewerFragment";
+public class ViewerFragment extends Fragment{
 
     @Bind(R.id.image)
     TouchImageView image;
@@ -60,9 +60,11 @@ public class ViewerFragment extends Fragment implements RequestListener<String,G
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        this.activity = (ViewerActivity) activity;
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if(context instanceof ViewerActivity){
+            this.activity = (ViewerActivity)context;
+        }
     }
 
     @Override
@@ -70,6 +72,8 @@ public class ViewerFragment extends Fragment implements RequestListener<String,G
         super.onCreate(savedInstanceState);
         url = getArguments().getString("url");
         initialShown = getArguments().getBoolean("initial_shown", false);
+
+        Logger.d("onResourceReady");
     }
 
     @Nullable
@@ -87,22 +91,26 @@ public class ViewerFragment extends Fragment implements RequestListener<String,G
     @Override
     public void onResume() {
         super.onResume();
-        Glide.with(activity)
-                .load(url)
-                .listener(this)
-                .into(image);
-    }
+        Glide.with(this).load(url).asBitmap().into(new SimpleTarget<Bitmap>() {
+            @Override
+            public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
+                Logger.d("onResourceReady");
+                if(null != resource){
+                    image.setImageBitmap(resource);
+                    maybeStartPostponedEnterTransition();
+                }else {
+                    getActivity().supportFinishAfterTransition();
+                }
+            }
 
-    @Override
-    public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-        maybeStartPostponedEnterTransition();
-        return false;
-    }
-
-    @Override
-    public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-        maybeStartPostponedEnterTransition();
-        return false;
+            @Override
+            public void onLoadFailed(Exception e, Drawable errorDrawable) {
+                super.onLoadFailed(e, errorDrawable);
+                com.orhanobut.logger.Logger.d("onLoadFailed");
+                maybeStartPostponedEnterTransition();
+                getActivity().supportFinishAfterTransition();
+            }
+        });
     }
 
     private void maybeStartPostponedEnterTransition() {

@@ -71,13 +71,12 @@ public class ViewerActivity extends AppCompatActivity implements RealmChangeList
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        supportPostponeEnterTransition();
-
         setContentView(R.layout.activity_viewer);
         ButterKnife.bind(this);
-
         images = new ArrayList<>();
+        mRealm = Realm.getInstance(this);
+        mRealm.addChangeListener(this);
+        loadAllImage();
 
         setSupportActionBar(toolbar);
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back_white_24dp);
@@ -89,11 +88,6 @@ public class ViewerActivity extends AppCompatActivity implements RealmChangeList
         });
 
         index = getIntent().getIntExtra("index", 0);
-
-        mRealm = Realm.getInstance(this);
-        mRealm.addChangeListener(this);
-
-        loadAllImage();
 
         adapter = new PagerAdapter();
 
@@ -122,16 +116,6 @@ public class ViewerActivity extends AppCompatActivity implements RealmChangeList
         super.onDestroy();
         mRealm.removeChangeListener(this);
         mRealm.close();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
     }
 
     @Override
@@ -182,9 +166,7 @@ public class ViewerActivity extends AppCompatActivity implements RealmChangeList
         Intent data = new Intent();
         data.putExtra("index", pager.getCurrentItem());
         setResult(RESULT_OK, data);
-
         showSystemUi();
-
         super.supportFinishAfterTransition();
     }
 
@@ -201,11 +183,8 @@ public class ViewerActivity extends AppCompatActivity implements RealmChangeList
 
         @Override
         public Fragment getItem(int position) {
-            return ViewerFragment.newFragment(
-                    images.get(position).getUrl(),
-                    position == index);
+            return ViewerFragment.newFragment(images.get(position).getUrl(), position == index);
         }
-
     }
 
 }
