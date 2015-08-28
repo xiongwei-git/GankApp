@@ -25,95 +25,68 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.DecelerateInterpolator;
 
 import com.android.ted.gank.R;
 import com.android.ted.gank.db.Image;
-import com.android.ted.gank.utils.Utils;
 import com.android.ted.gank.view.RadioImageView;
 import com.bumptech.glide.Glide;
-
-import java.util.ArrayList;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-
-/**
- * Created by froger_mcs on 05.11.14.
+/***
+ *
  */
-public abstract class BenefitGoodsItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements View.OnClickListener {
+public abstract class BenefitGoodsItemAdapter extends ArrayRecyclerAdapter<Image, BenefitGoodsItemAdapter.ViewHolder>{
 
+    private final Context context;
     private final LayoutInflater inflater;
-
-    private static final int ANIMATED_ITEMS_COUNT = 1;
-
-    private Context context;
-    private int lastAnimatedPosition = -1;
-    private boolean animateItems = false;
-
-    private ArrayList<Image> imageDataList;
 
     public BenefitGoodsItemAdapter(Context context) {
         this.context = context;
-        imageDataList = new ArrayList<>();
         this.inflater = LayoutInflater.from(context);
+        setHasStableIds(true);
     }
 
     @Override
-    public void onClick(View view) {
-        final int viewId = view.getId();
-        if(viewId == R.id.img_like_goods){
-
-        }
-    }
-
-
-    @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new CellGoodsViewHolder(R.layout.benefit_goods_item_layout, parent);
-    }
-
-    private void runEnterAnimation(View view, int position) {
-        if (!animateItems || position >= ANIMATED_ITEMS_COUNT - 1) {
-            return;
-        }
-        if (position > lastAnimatedPosition) {
-            lastAnimatedPosition = position;
-            view.setTranslationY(Utils.getScreenHeight(context));
-            view.animate()
-                    .translationY(0)
-                    .setInterpolator(new DecelerateInterpolator(3.f))
-                    .setDuration(700)
-                    .start();
-        }
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        return new ViewHolder(R.layout.benefit_goods_item_layout, parent);
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
-        runEnterAnimation(viewHolder.itemView, position);
-        final CellGoodsViewHolder holder = (CellGoodsViewHolder) viewHolder;
-        bindGoodsItem(position, holder);
-    }
-
-    private void bindGoodsItem(int position, CellGoodsViewHolder holder) {
-        Image image = imageDataList.get(position);
+    public void onBindViewHolder(ViewHolder holder, int position) {
+        Image image = get(position);
         holder.imageView.setOriginalSize(image.getWidth(), image.getHeight());
         loadGoodsImage(holder, image);
         ViewCompat.setTransitionName(holder.imageView, image.getUrl());
     }
 
     @Override
-    public int getItemViewType(int position) {
-        return position;
+    public long getItemId(int position) {
+        return get(position).getUrl().hashCode();
     }
 
-    @Override
-    public int getItemCount() {
-        return imageDataList.size();
+    protected abstract void onItemClick(View v, int position);
+
+    public class ViewHolder extends RecyclerView.ViewHolder {
+
+        @Bind(R.id.image)
+        public RadioImageView imageView;
+
+        public ViewHolder(@LayoutRes int resource, ViewGroup parent) {
+            super(inflater.inflate(resource, parent, false));
+            ButterKnife.bind(this, itemView);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onItemClick(v, getAdapterPosition());
+                }
+            });
+        }
+
     }
 
-    private void loadGoodsImage(final CellGoodsViewHolder holder, Image imgGoods) {
+    private void loadGoodsImage(ViewHolder holder, Image imgGoods) {
         if (null == imgGoods || TextUtils.isEmpty(imgGoods.getUrl())) {
             Glide.with(context)
                     .load(R.drawable.item_default_img)
@@ -126,32 +99,6 @@ public abstract class BenefitGoodsItemAdapter extends RecyclerView.Adapter<Recyc
                     .into(holder.imageView);
         }
     }
-
-    public void updateItems(ArrayList<Image> images,boolean animated) {
-        imageDataList.clear();
-        imageDataList.addAll(images);
-        animateItems = animated;
-        notifyDataSetChanged();
-    }
-
-    protected abstract void onItemClick(View v, int position);
-
-
-    public class CellGoodsViewHolder extends RecyclerView.ViewHolder {
-
-        @Bind(R.id.image)
-        public RadioImageView imageView;
-
-        public CellGoodsViewHolder(@LayoutRes int resource, ViewGroup parent) {
-            super(inflater.inflate(resource, parent, false));
-            ButterKnife.bind(this, itemView);
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onItemClick(v, getAdapterPosition());
-                }
-            });
-        }
-
-    }
 }
+
+

@@ -29,11 +29,10 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewTreeObserver;
+import android.widget.Toast;
 
 import com.android.ted.gank.R;
 import com.android.ted.gank.adapter.MainFragmentPagerAdapter;
@@ -41,6 +40,7 @@ import com.android.ted.gank.data.ImageGoodsCache;
 import com.android.ted.gank.db.Image;
 import com.android.ted.gank.model.GoodsResult;
 import com.android.ted.gank.network.GankCloudApi;
+import com.orhanobut.logger.Logger;
 
 import java.util.List;
 import java.util.Map;
@@ -165,22 +165,37 @@ public class MainActivity extends AppCompatActivity {
     private void setupViewPager(ViewPager viewPager) {
         mBenefitListFragment = new BenefitListFragment();
         mPagerAdapter = new MainFragmentPagerAdapter(getSupportFragmentManager());
-        mPagerAdapter.addFragment(new AndroidGoodsListFragment(), "Android");
-        mPagerAdapter.addFragment(new IosGoodsListFragment(), "IOS");
+        mPagerAdapter.addFragment(CommonGoodsListFragment.newFragment("Android"), "Android");
+        mPagerAdapter.addFragment(CommonGoodsListFragment.newFragment("IOS"), "IOS");
         mPagerAdapter.addFragment(mBenefitListFragment, "福利");
         viewPager.setAdapter(mPagerAdapter);
     }
 
     private void setupDrawerContent(NavigationView navigationView) {
+        navigationView.getMenu().findItem(R.id.nav_home).setChecked(true);
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
                         menuItem.setChecked(true);
                         mDrawerLayout.closeDrawers();
+                        disposeMenuAction(menuItem);
                         return true;
                     }
                 });
+    }
+
+    private void disposeMenuAction(MenuItem item){
+        switch (item.getItemId()){
+            case R.id.nav_collect:
+            case R.id.nav_time:
+                Toast.makeText(this,"功能开发中",Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.nav_code:
+                break;
+            case R.id.nav_author:
+                break;
+        }
     }
 
     private void loadAllImageGoods() {

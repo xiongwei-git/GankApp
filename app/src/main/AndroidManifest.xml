@@ -32,12 +32,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".bak.CheeseDetailActivity"
-            android:parentActivityName=".main.MainActivity">
-            <meta-data android:name="android.support.PARENT_ACTIVITY"
-                android:value=".main.MainActivity" />
-        </activity>
-
         <activity
             android:name=".main.ViewerActivity"
             android:theme="@style/ViewerTheme" />

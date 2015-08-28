@@ -28,10 +28,12 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.Toast;
 
 import com.android.ted.gank.R;
 import com.android.ted.gank.adapter.BenefitGoodsItemAdapter;
@@ -42,8 +44,11 @@ import com.android.ted.gank.network.GankCloudApi;
 import com.android.ted.gank.service.ImageImproveService;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import io.realm.Realm;
 import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
@@ -52,28 +57,42 @@ import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
-public class BenefitListFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener,
+public class BenefitListFragment extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener,
         RealmChangeListener {
-    private RecyclerView mRecyclerView;
-    private SwipeRefreshLayout mSwipeRefreshLayout;
+
+    @Bind(R.id.benefit_recycler_view)
+    RecyclerView mRecyclerView;
+    @Bind(R.id.benefit_swipe_refresh)
+    SwipeRefreshLayout mSwipeRefreshLayout;
+
     private ArrayList<Image> mAllBenefitImage;
     private BenefitGoodsItemAdapter mBenefitItemAdapter;
     private UpdateResultReceiver updateResultReceiver = new UpdateResultReceiver();
     private Realm mRealm;
+    private StaggeredGridLayoutManager mStaggeredGridLayoutManager;
+
     //是否正在更新图片信息
     private boolean bImproveDoing = false;
-    private StaggeredGridLayoutManager mStaggeredGridLayoutManager;
+    private boolean isALlLoad = false;
+    private int hasLoadPage = 0;
+    private boolean isLoadMore = false;
 
 
     private Observer<GoodsResult> getBenefitGoodsObserver = new Observer<GoodsResult>() {
         @Override
         public void onNext(final GoodsResult goodsResult) {
+            if(goodsResult.getResults().size() == GankCloudApi.LOAD_LIMIT){
+                hasLoadPage++;
+            }else {
+                isALlLoad = true;
+            }
             if (analysisNewImage(goodsResult))
                 doImproveJob();
         }
 
         @Override
         public void onCompleted() {
+            isLoadMore = false;
             mSwipeRefreshLayout.setRefreshing(false);
         }
 
@@ -95,7 +114,7 @@ public class BenefitListFragment extends Fragment implements SwipeRefreshLayout.
 
     @Override
     public void onRefresh() {
-        reloadBenefitGoods();
+        reloadData();
     }
 
     @Override
@@ -109,30 +128,33 @@ public class BenefitListFragment extends Fragment implements SwipeRefreshLayout.
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mAllBenefitImage = new ArrayList<>();
-        mStaggeredGridLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
         mBenefitItemAdapter = new BenefitGoodsItemAdapter(getActivity()) {
             @Override
             protected void onItemClick(View v, int position) {
                 startViewerActivity(v,position);
             }
         };
-        mRealm = Realm.getInstance(getActivity());
+        mRealm = getRealm();
         mRealm.addChangeListener(this);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mSwipeRefreshLayout = (SwipeRefreshLayout) inflater.inflate(R.layout.fragment_benifit_list, container, false);
-        mRecyclerView = (RecyclerView) mSwipeRefreshLayout.findViewById(R.id.benefit_recycler_view);
+        return inflater.inflate(R.layout.fragment_benifit_list, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        ButterKnife.bind(this, view);
         setupBaseView();
-        return mSwipeRefreshLayout;
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         refreshBenefitGoods();
-        reloadBenefitGoods();
+        reloadData();
     }
 
     @Override
@@ -156,28 +178,69 @@ public class BenefitListFragment extends Fragment implements SwipeRefreshLayout.
         mRealm.close();
     }
 
-    private void reloadBenefitGoods() {
+    private void refreshBenefitGoods(){
+        mAllBenefitImage.clear();
+        RealmResults<Image> results = mRealm.where(Image.class).notEqualTo("width",0).findAll();
+        mAllBenefitImage.addAll(results);
+        mBenefitItemAdapter.replaceWith(mAllBenefitImage);
+    }
+
+    private void setupBaseView() {
+        mSwipeRefreshLayout.setColorSchemeColors(R.color.colorPrimary, R.color.colorPrimaryDark);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
+        mStaggeredGridLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+        mRecyclerView.setLayoutManager(mStaggeredGridLayoutManager);
+        mRecyclerView.setAdapter(mBenefitItemAdapter);
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    BenefitListFragment.this.onScrollStateChanged();
+                }
+            }
+        });
+    }
+
+    private void onScrollStateChanged(){
+        int[] positions = new int[mStaggeredGridLayoutManager.getSpanCount()];
+        mStaggeredGridLayoutManager.findLastVisibleItemPositions(positions);
+
+        for (int position : positions) {
+            if (position == mStaggeredGridLayoutManager.getItemCount() - 1) {
+                loadMore();
+                break;
+            }
+        }
+    }
+
+    private void loadMore(){
+        if(isALlLoad){
+            Toast.makeText(getActivity(), "全部加载完毕", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if(isLoadMore)return;
+        isLoadMore = true;
+        loadData(hasLoadPage + 1);
+    }
+
+    private void reloadData(){
+        mSwipeRefreshLayout.setRefreshing(true);
+        mAllBenefitImage.clear();
+        isALlLoad = false;
+        hasLoadPage = 0;
+        loadData(1);
+    }
+
+    private void loadData(int startPage){
         GankCloudApi.getIns()
-                .getBenefitsGoods(20, GankCloudApi.LOAD_START)
+                .getBenefitsGoods(GankCloudApi.LOAD_LIMIT, startPage)
                 .cache()
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(getBenefitGoodsObserver);
     }
 
-    private void refreshBenefitGoods(){
-        mAllBenefitImage.clear();
-        RealmResults<Image> results = mRealm.where(Image.class).notEqualTo("width",0).findAll();
-        mAllBenefitImage.addAll(results);
-        mBenefitItemAdapter.updateItems(mAllBenefitImage, true);
-    }
-
-    private void setupBaseView() {
-        mSwipeRefreshLayout.setColorSchemeColors(R.color.colorPrimary, R.color.colorPrimaryDark);
-        mSwipeRefreshLayout.setOnRefreshListener(this);
-        mRecyclerView.setLayoutManager(mStaggeredGridLayoutManager);
-        mRecyclerView.setAdapter(mBenefitItemAdapter);
-    }
 
     /***
      * 分析新的数据
@@ -212,7 +275,7 @@ public class BenefitListFragment extends Fragment implements SwipeRefreshLayout.
         Intent intent = new Intent(getActivity(), ViewerActivity.class);
         intent.putExtra("index", position);
         ActivityOptionsCompat options = ActivityOptionsCompat
-                .makeSceneTransitionAnimation(getActivity(), itemView, mAllBenefitImage.get(position).getUrl());
+                .makeSceneTransitionAnimation(getActivity(), itemView, mBenefitItemAdapter.get(position).getUrl());
         getActivity().startActivity(intent, options.toBundle());
     }
 
@@ -227,7 +290,7 @@ public class BenefitListFragment extends Fragment implements SwipeRefreshLayout.
     }
 
     public Map<String, View> getActivitySharedElements(int position,Map<String,View> map){
-        map.put(mAllBenefitImage.get(position).getUrl(),mStaggeredGridLayoutManager.findViewByPosition(position));
+        map.put(mBenefitItemAdapter.get(position).getUrl(),mStaggeredGridLayoutManager.findViewByPosition(position));
         return map;
     }
 

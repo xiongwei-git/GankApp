@@ -43,9 +43,6 @@ import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
 
 public class ViewerActivity extends AppCompatActivity implements RealmChangeListener {
-
-    private static final String TAG = "ViewerActivity";
-
     private static final int SYSTEM_UI_BASE_VISIBILITY = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
             | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
             | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;

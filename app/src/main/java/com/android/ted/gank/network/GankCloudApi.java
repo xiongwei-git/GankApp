@@ -110,6 +110,16 @@ public class GankCloudApi {
         );
     }
 
+    public Observable<GoodsResult> getCommonGoods(String type,int limit, int page) {
+        if("Android".equalsIgnoreCase(type)){
+            return mWebService.getAndroidGoods(limit, page);
+        }
+        if("IOS".equalsIgnoreCase(type)){
+            return mWebService.getIosGoods(limit, page);
+        }
+        return mWebService.getAndroidGoods(limit, page);
+    }
+
     public Observable<GoodsResult> getAndroidGoods(int limit, int page) {
         return mWebService.getAndroidGoods(limit, page);
     }

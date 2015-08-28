@@ -22,12 +22,12 @@
             android:icon="@drawable/ic_dashboard"
             android:title="分类浏览" />
         <item
-            android:id="@+id/nav_messages"
+            android:id="@+id/nav_time"
             android:icon="@drawable/ic_event"
             android:title="时间浏览" />
 
         <item
-            android:id="@+id/nav_discussion"
+            android:id="@+id/nav_collect"
             android:icon="@drawable/ic_forum"
             android:title="我的收藏" />
     </group>
@@ -35,9 +35,11 @@
     <item android:title="Other">
         <menu>
             <item
+                android:id="@+id/nav_code"
                 android:icon="@drawable/github_logo"
                 android:title="应用源码" />
             <item
+                android:id="@+id/nav_author"
                 android:icon="@drawable/ic_forum"
                 android:title="关于作者" />
         </menu>
