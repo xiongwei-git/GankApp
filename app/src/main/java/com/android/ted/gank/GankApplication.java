@@ -5,6 +5,7 @@ import android.content.Context;
 
 import com.orhanobut.logger.LogLevel;
 import com.orhanobut.logger.Logger;
+import com.umeng.analytics.MobclickAgent;
 
 public class GankApplication extends Application {
 
@@ -18,6 +19,7 @@ public class GankApplication extends Application {
     public void onCreate() {
         super.onCreate();
         context = getApplicationContext();
+        MobclickAgent.updateOnlineConfig(context);
         initLogger();
     }
 

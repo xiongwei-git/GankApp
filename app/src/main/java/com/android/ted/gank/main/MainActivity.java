@@ -30,7 +30,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -42,13 +41,16 @@ import com.android.ted.gank.data.ImageGoodsCache;
 import com.android.ted.gank.db.Image;
 import com.android.ted.gank.model.GoodsResult;
 import com.android.ted.gank.network.GankCloudApi;
+import com.orhanobut.logger.Logger;
+import com.umeng.analytics.MobclickAgent;
 
 import java.util.List;
 import java.util.Map;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import io.realm.Realm;
 import io.realm.RealmResults;
-import retrofit.RetrofitError;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -56,7 +58,19 @@ import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
 
-    private DrawerLayout mDrawerLayout;
+    @Bind(R.id.toolbar)
+    Toolbar mToolbar;
+    @Bind(R.id.drawer_layout)
+    DrawerLayout mDrawerLayout;
+    @Bind(R.id.viewpager)
+    ViewPager mViewPager;
+    @Bind(R.id.tabs)
+    TabLayout mTabLayout;
+    @Bind(R.id.nav_view)
+    NavigationView mNavigationView;
+    @Bind(R.id.fab)
+    FloatingActionButton mFABtn;
+
     private Realm mRealm;
     private Bundle mReenterState;
     private MainFragmentPagerAdapter mPagerAdapter;
@@ -75,19 +89,12 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onCompleted() {
-
+            Logger.d("获取背景图服务完成");
         }
 
         @Override
         public void onError(final Throwable error) {
-            if (error instanceof RetrofitError) {
-                RetrofitError e = (RetrofitError) error;
-                if (e.getKind() == RetrofitError.Kind.NETWORK) {
-                } else if (e.getKind() == RetrofitError.Kind.HTTP) {
-                } else {
-                }
-            }
-
+            Logger.e(error,"获取背景图服务失败");
         }
     };
 
@@ -99,27 +106,20 @@ public class MainActivity extends AppCompatActivity {
 
         mRealm = Realm.getInstance(this);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        ButterKnife.bind(this);
 
+        setSupportActionBar(mToolbar);
         final ActionBar ab = getSupportActionBar();
         ab.setHomeAsUpIndicator(R.drawable.ic_menu);
         ab.setDisplayHomeAsUpEnabled(true);
 
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        setupDrawerContent(mNavigationView);
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        if (navigationView != null) {
-            setupDrawerContent(navigationView);
-        }
+        setupViewPager();
 
-        ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
-        if (viewPager != null) {
-            setupViewPager(viewPager);
-        }
+        mTabLayout.setupWithViewPager(mViewPager);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        mFABtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Snackbar.make(view, "Here's a Snackbar", Snackbar.LENGTH_LONG)
@@ -127,18 +127,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(viewPager);
-
-        setExitSharedElementCallback(mSharedElementCallback);
+        //setExitSharedElementCallback(mSharedElementCallback);
 
         loadAllImageGoods();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        //getMenuInflater().inflate(R.menu.sample_actions, menu);
-        return true;
     }
 
     @Override
@@ -152,18 +143,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        MobclickAgent.onResume(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        MobclickAgent.onPause(this);
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         mRealm.close();
     }
 
-    private void setupViewPager(ViewPager viewPager) {
+    private void setupViewPager() {
         mBenefitListFragment = new BenefitListFragment();
         mPagerAdapter = new MainFragmentPagerAdapter(getSupportFragmentManager());
         mPagerAdapter.addFragment(CommonGoodsListFragment.newFragment("Android"), "Android");
         mPagerAdapter.addFragment(CommonGoodsListFragment.newFragment("IOS"), "IOS");
         mPagerAdapter.addFragment(mBenefitListFragment, "福利");
-        viewPager.setAdapter(mPagerAdapter);
+        mViewPager.setAdapter(mPagerAdapter);
     }
 
     private void setupDrawerContent(NavigationView navigationView) {
@@ -187,10 +190,10 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this,"功能开发中",Toast.LENGTH_SHORT).show();
                 break;
             case R.id.nav_code:
-                callWebview(Constants.GITHUB_URL);
+                callWebView(Constants.GITHUB_URL);
                 break;
             case R.id.nav_author:
-                callWebview(Constants.AUTHOR_URL);
+                callWebView(Constants.AUTHOR_URL);
                 break;
         }
     }
@@ -209,27 +212,27 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private SharedElementCallback mSharedElementCallback = new SharedElementCallback() {
-        @Override
-        public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
-            if (mReenterState != null) {
-                int i = mReenterState.getInt("index", 0);
-                sharedElements.clear();
-                mBenefitListFragment.getActivitySharedElements(i,sharedElements);
-                mReenterState = null;
-            }
-        }
-    };
+//    private SharedElementCallback mSharedElementCallback = new SharedElementCallback() {
+//        @Override
+//        public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
+//            if (mReenterState != null) {
+//                int i = mReenterState.getInt("index", 0);
+//                sharedElements.clear();
+//                mBenefitListFragment.getActivitySharedElements(i,sharedElements);
+//                mReenterState = null;
+//            }
+//        }
+//    };
+//
+//    @Override
+//    public void onActivityReenter(int resultCode, Intent data) {
+//        super.onActivityReenter(resultCode, data);
+//        supportPostponeEnterTransition();
+//        mReenterState = new Bundle(data.getExtras());
+//        mBenefitListFragment.onActivityReenter(new Bundle(data.getExtras()));
+//    }
 
-    @Override
-    public void onActivityReenter(int resultCode, Intent data) {
-        super.onActivityReenter(resultCode, data);
-        supportPostponeEnterTransition();
-        mReenterState = new Bundle(data.getExtras());
-        mBenefitListFragment.onActivityReenter(new Bundle(data.getExtras()));
-    }
-
-    private void callWebview(String url){
+    private void callWebView(String url){
         Intent intent= new Intent();
         intent.setAction("android.intent.action.VIEW");
         Uri content_url = Uri.parse(url);

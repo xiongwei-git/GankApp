@@ -16,23 +16,26 @@
 
 package com.android.ted.gank.main;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.android.ted.gank.R;
 import com.android.ted.gank.adapter.GoodsItemAdapter;
 import com.android.ted.gank.model.Goods;
 import com.android.ted.gank.model.GoodsResult;
 import com.android.ted.gank.network.GankCloudApi;
+import com.malinskiy.materialicons.IconDrawable;
+import com.malinskiy.materialicons.Iconify;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -41,7 +44,7 @@ import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
-public class CommonGoodsListFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener{
+public class CommonGoodsListFragment extends BaseLoadingFragment implements SwipeRefreshLayout.OnRefreshListener{
     @Bind(R.id.common_recycler_view)
     RecyclerView mRecyclerView;
     @Bind(R.id.common_swipe_refresh)
@@ -79,16 +82,25 @@ public class CommonGoodsListFragment extends Fragment implements SwipeRefreshLay
         @Override
         public void onError(final Throwable error) {
             if (error instanceof RetrofitError) {
+                Drawable errorDrawable = new IconDrawable(getContext(), Iconify.IconValue.zmdi_network_off)
+                        .colorRes(android.R.color.white);
                 RetrofitError e = (RetrofitError) error;
                 if (e.getKind() == RetrofitError.Kind.NETWORK) {
-
+                    showError(errorDrawable,"网络异常","好像您的网络出了点问题","重试",mErrorRetryListener);
                 } else if (e.getKind() == RetrofitError.Kind.HTTP) {
-
+                    showError(errorDrawable,"服务异常","好像服务器出了点问题","再试一次",mErrorRetryListener);
                 } else {
-
+                    showError(errorDrawable,"莫名异常","外星人进攻地球了？","反击",mErrorRetryListener);
                 }
             }
             isLoadMore = false;
+        }
+    };
+
+    private View.OnClickListener mErrorRetryListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            reloadData();
         }
     };
 
@@ -124,8 +136,8 @@ public class CommonGoodsListFragment extends Fragment implements SwipeRefreshLay
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_common_list, container, false);
+    View onCreateContentView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_common_list,null);
     }
 
     @Override
@@ -138,6 +150,7 @@ public class CommonGoodsListFragment extends Fragment implements SwipeRefreshLay
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        showLoading();
         reloadData();
     }
 
@@ -152,7 +165,9 @@ public class CommonGoodsListFragment extends Fragment implements SwipeRefreshLay
     private void loadMore(){
         if(isLoadMore)return;
         if(isALlLoad){
-            Toast.makeText(getActivity(),"全部加载完毕",Toast.LENGTH_SHORT).show();
+            Snackbar.make(mRecyclerView,"全部加载完毕",Snackbar.LENGTH_SHORT)
+                    .setAction("知道了",null)
+                    .show();
             return;
         }
         isLoadMore = true;
@@ -177,6 +192,11 @@ public class CommonGoodsListFragment extends Fragment implements SwipeRefreshLay
     }
 
     private void disposeResults(final GoodsResult goodsResult){
+        if(mAllCommonGoods.isEmpty() && goodsResult.getResults().isEmpty()){
+            showNoDataView();
+            return;
+        }
+        showContent();
         if(goodsResult.getResults().size() == GankCloudApi.LOAD_LIMIT){
             hasLoadPage++;
         }else {
@@ -184,6 +204,13 @@ public class CommonGoodsListFragment extends Fragment implements SwipeRefreshLay
         }
         isLoadMore = false;
         mAllCommonGoods.addAll(goodsResult.getResults());
-        mCommonItemAdapter.updateItems(mAllCommonGoods,hasLoadPage == 1);
+        mCommonItemAdapter.updateItems(mAllCommonGoods, hasLoadPage == 1);
+    }
+
+    private void showNoDataView(){
+        Drawable emptyDrawable = new IconDrawable(getContext(), Iconify.IconValue.zmdi_shopping_cart)
+                .colorRes(android.R.color.white);
+        List<Integer> skipIds = new ArrayList<>();
+        showEmpty(emptyDrawable, "数据列表为空", "没有拿到数据哎，请等一下再来玩干货吧", skipIds);
     }
 }

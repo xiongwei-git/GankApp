@@ -131,5 +131,4 @@ public class ImageImproveService extends IntentService{
         measured.x = options.outWidth;
         measured.y = options.outHeight;
     }
-
 }

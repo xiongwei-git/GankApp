@@ -22,13 +22,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,9 +42,11 @@ import com.android.ted.gank.model.Goods;
 import com.android.ted.gank.model.GoodsResult;
 import com.android.ted.gank.network.GankCloudApi;
 import com.android.ted.gank.service.ImageImproveService;
+import com.malinskiy.materialicons.IconDrawable;
+import com.malinskiy.materialicons.Iconify;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import butterknife.Bind;
@@ -57,7 +59,7 @@ import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
-public class BenefitListFragment extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener,
+public class BenefitListFragment extends BaseLoadingFragment implements SwipeRefreshLayout.OnRefreshListener,
         RealmChangeListener {
 
     @Bind(R.id.benefit_recycler_view)
@@ -81,6 +83,11 @@ public class BenefitListFragment extends BaseFragment implements SwipeRefreshLay
     private Observer<GoodsResult> getBenefitGoodsObserver = new Observer<GoodsResult>() {
         @Override
         public void onNext(final GoodsResult goodsResult) {
+            if(mAllBenefitImage.isEmpty() && goodsResult.getResults().isEmpty()){
+                showNoDataView();
+                return;
+            }
+            showContent();
             if(goodsResult.getResults().size() == GankCloudApi.LOAD_LIMIT){
                 hasLoadPage++;
             }else {
@@ -88,6 +95,7 @@ public class BenefitListFragment extends BaseFragment implements SwipeRefreshLay
             }
             if (analysisNewImage(goodsResult))
                 doImproveJob();
+            else refreshBenefitGoods();
         }
 
         @Override
@@ -99,16 +107,24 @@ public class BenefitListFragment extends BaseFragment implements SwipeRefreshLay
         @Override
         public void onError(final Throwable error) {
             if (error instanceof RetrofitError) {
+                Drawable errorDrawable = new IconDrawable(getContext(), Iconify.IconValue.zmdi_network_off)
+                        .colorRes(android.R.color.white);
                 RetrofitError e = (RetrofitError) error;
                 if (e.getKind() == RetrofitError.Kind.NETWORK) {
-
+                    showError(errorDrawable,"网络异常","好像您的网络出了点问题","重试",mErrorRetryListener);
                 } else if (e.getKind() == RetrofitError.Kind.HTTP) {
-
+                    showError(errorDrawable,"服务异常","好像服务器出了点问题","再试一次",mErrorRetryListener);
                 } else {
-
+                    showError(errorDrawable,"莫名异常","外星人进攻地球了？","反击",mErrorRetryListener);
                 }
             }
+        }
+    };
 
+    private View.OnClickListener mErrorRetryListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            reloadData();
         }
     };
 
@@ -139,8 +155,8 @@ public class BenefitListFragment extends BaseFragment implements SwipeRefreshLay
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_benifit_list, container, false);
+    View onCreateContentView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_benifit_list,null);
     }
 
     @Override
@@ -205,7 +221,6 @@ public class BenefitListFragment extends BaseFragment implements SwipeRefreshLay
     private void onScrollStateChanged(){
         int[] positions = new int[mStaggeredGridLayoutManager.getSpanCount()];
         mStaggeredGridLayoutManager.findLastVisibleItemPositions(positions);
-
         for (int position : positions) {
             if (position == mStaggeredGridLayoutManager.getItemCount() - 1) {
                 loadMore();
@@ -263,7 +278,6 @@ public class BenefitListFragment extends BaseFragment implements SwipeRefreshLay
         return false;
     }
 
-
     private void doImproveJob() {
         bImproveDoing = true;
         Intent intent = new Intent(getActivity(), ImageImproveService.class);
@@ -271,12 +285,19 @@ public class BenefitListFragment extends BaseFragment implements SwipeRefreshLay
         getActivity().startService(intent);
     }
 
+    private void showNoDataView(){
+        Drawable emptyDrawable = new IconDrawable(getContext(), Iconify.IconValue.zmdi_shopping_cart)
+                .colorRes(android.R.color.white);
+        List<Integer> skipIds = new ArrayList<>();
+        showEmpty(emptyDrawable, "数据列表为空", "没有拿到数据哎，请等一下再来玩妹子吧", skipIds);
+    }
+
     private void startViewerActivity(View itemView, int position) {
         Intent intent = new Intent(getActivity(), ViewerActivity.class);
         intent.putExtra("index", position);
-        ActivityOptionsCompat options = ActivityOptionsCompat
-                .makeSceneTransitionAnimation(getActivity(), itemView, mBenefitItemAdapter.get(position).getUrl());
-        getActivity().startActivity(intent, options.toBundle());
+//        ActivityOptionsCompat options = ActivityOptionsCompat
+//                .makeSceneTransitionAnimation(getActivity(), itemView, mBenefitItemAdapter.get(position).getUrl());
+        getActivity().startActivity(intent);
     }
 
     private class UpdateResultReceiver extends BroadcastReceiver {
@@ -289,21 +310,21 @@ public class BenefitListFragment extends BaseFragment implements SwipeRefreshLay
         }
     }
 
-    public Map<String, View> getActivitySharedElements(int position,Map<String,View> map){
-        map.put(mBenefitItemAdapter.get(position).getUrl(),mStaggeredGridLayoutManager.findViewByPosition(position));
-        return map;
-    }
-
-    public void onActivityReenter(Bundle bundle){
-        mRecyclerView.scrollToPosition(bundle.getInt("index", 0));
-        mRecyclerView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-            @Override
-            public boolean onPreDraw() {
-                mRecyclerView.getViewTreeObserver().removeOnPreDrawListener(this);
-                mRecyclerView.requestLayout();
-                getActivity().supportStartPostponedEnterTransition();
-                return true;
-            }
-        });
-    }
+//    public Map<String, View> getActivitySharedElements(int position,Map<String,View> map){
+//        map.put(mBenefitItemAdapter.get(position).getUrl(),mStaggeredGridLayoutManager.findViewByPosition(position));
+//        return map;
+//    }
+//
+//    public void onActivityReenter(Bundle bundle){
+//        mRecyclerView.scrollToPosition(bundle.getInt("index", 0));
+//        mRecyclerView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+//            @Override
+//            public boolean onPreDraw() {
+//                mRecyclerView.getViewTreeObserver().removeOnPreDrawListener(this);
+//                mRecyclerView.requestLayout();
+//                getActivity().supportStartPostponedEnterTransition();
+//                return true;
+//            }
+//        });
+//    }
 }
