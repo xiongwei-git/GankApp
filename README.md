@@ -17,6 +17,11 @@
 
 ![img](http://7vzsca.com1.z0.glb.clouddn.com/Gank_2.png_img500w)
 
+###遗留功能：
+1、干货收藏
+
+2、按日期浏览
+
 ###支持版本：
 `minSdkVersion 19`
 
