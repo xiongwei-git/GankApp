@@ -9,8 +9,10 @@
 
 3、开源项目[cheesesquare](https://github.com/chrisbanes/cheesesquare)
 
-###演示视频：
+###apk下载：
+####[直接下载](http://pre.im/gankio11)
 
+###演示视频：
 ####[演示视频@Youtube](https://youtu.be/JhRjWYbYpKc)
 
 ###应用截图：
