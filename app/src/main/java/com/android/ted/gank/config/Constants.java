@@ -19,6 +19,8 @@ public class Constants {
 
     public static final String AUTHOR_URL = "http://www.weibo.com/521213101";
 
+    public static final String GANK_URL = "http://gank.io/";
+
 
 
 }

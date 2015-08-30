@@ -18,6 +18,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="192dp"
+                android:id="@+id/menu_header"
     android:background="?attr/colorPrimaryDark"
     android:padding="16dp"
     android:theme="@style/ThemeOverlay.AppCompat.Dark"
@@ -25,6 +26,7 @@
 
     <ImageButton
         android:id="@+id/btn_to_github"
+        android:visibility="gone"
         android:background="@drawable/github_logo"
         android:layout_alignParentRight="true"
         android:layout_width="wrap_content"

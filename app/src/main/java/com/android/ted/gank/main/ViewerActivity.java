@@ -195,7 +195,7 @@ public class ViewerActivity extends AppCompatActivity implements RealmChangeList
     }
 
     private void showTips(){
-        if(!mAppPreferences.getBoolean(KEY_SET_WALLPAPER_TIPS,true)){
+        if(mAppPreferences.getBoolean(KEY_SET_WALLPAPER_TIPS,true)){
             Snackbar.make(toolbar,"长按妹子图即可设置为壁纸",Snackbar.LENGTH_LONG).setAction("知道了", new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

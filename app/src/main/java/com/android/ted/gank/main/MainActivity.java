@@ -102,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        MobclickAgent.updateOnlineConfig(this);
         setContentView(R.layout.activity_main);
 
         mRealm = Realm.getInstance(this);
@@ -181,6 +182,12 @@ public class MainActivity extends AppCompatActivity {
                         return true;
                     }
                 });
+        navigationView.findViewById(R.id.menu_header).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                callWebView(Constants.GANK_URL);
+            }
+        });
     }
 
     private void disposeMenuAction(MenuItem item){
