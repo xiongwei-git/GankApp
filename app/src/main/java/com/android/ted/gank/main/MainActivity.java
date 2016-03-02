@@ -102,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        MobclickAgent.updateOnlineConfig(this);
         setContentView(R.layout.activity_main);
 
         mRealm = Realm.getInstance(this);
@@ -115,18 +114,17 @@ public class MainActivity extends AppCompatActivity {
         ab.setDisplayHomeAsUpEnabled(true);
 
         setupDrawerContent(mNavigationView);
-
         setupViewPager();
 
         mTabLayout.setupWithViewPager(mViewPager);
 
-        mFABtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Here's a Snackbar", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        //mFABtn.setOnClickListener(new View.OnClickListener() {
+        //    @Override
+        //    public void onClick(View view) {
+        //        Snackbar.make(view, "Here's a Snackbar", Snackbar.LENGTH_LONG)
+        //                .setAction("Action", null).show();
+        //    }
+        //});
 
         //setExitSharedElementCallback(mSharedElementCallback);
 
@@ -182,12 +180,12 @@ public class MainActivity extends AppCompatActivity {
                         return true;
                     }
                 });
-        navigationView.findViewById(R.id.menu_header).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                callWebView(Constants.GANK_URL);
-            }
-        });
+        //navigationView.findViewById(R.id.menu_header).setOnClickListener(new View.OnClickListener() {
+        //    @Override
+        //    public void onClick(View v) {
+        //        callWebView(Constants.GANK_URL);
+        //    }
+        //});
     }
 
     private void disposeMenuAction(MenuItem item){
@@ -218,6 +216,7 @@ public class MainActivity extends AppCompatActivity {
             ImageGoodsCache.getIns().addAllImageGoods(allImage);
         }
     }
+
 
 //    private SharedElementCallback mSharedElementCallback = new SharedElementCallback() {
 //        @Override

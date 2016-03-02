@@ -21,9 +21,10 @@ public class Goods{
     private String type;
     private String url;
     private boolean used;
-    private String objectId;
+    private String _id;
     private String createdAt;
-    private String updatedAt;
+    private String _ns;
+    private String source;
 
     public String getWho() {
         return who;
@@ -73,12 +74,12 @@ public class Goods{
         this.used = used;
     }
 
-    public String getObjectId() {
-        return objectId;
+    public String get_id() {
+        return _id;
     }
 
-    public void setObjectId(String objectId) {
-        this.objectId = objectId;
+    public void set_id(String _id) {
+        this._id = _id;
     }
 
     public String getCreatedAt() {
@@ -89,12 +90,19 @@ public class Goods{
         this.createdAt = createdAt;
     }
 
-    public String getUpdatedAt() {
-        return updatedAt;
+    public String get_ns() {
+        return _ns;
     }
 
-    public void setUpdatedAt(String updatedAt) {
-        this.updatedAt = updatedAt;
+    public void set_ns(String _ns) {
+        this._ns = _ns;
     }
 
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
 }

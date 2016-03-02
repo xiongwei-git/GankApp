@@ -37,7 +37,7 @@ public class Image extends RealmObject {
     private int position = 0;
 
     @PrimaryKey
-    private String objectId;
+    private String _id;
 
     private String who;
     private String publishedAt;
@@ -47,10 +47,19 @@ public class Image extends RealmObject {
     private boolean used;
 
     private String createdAt;
-    private String updatedAt;
+    private String _ns;
 
     public static Image queryImageById(Realm realm,String objectId){
-        RealmResults<Image> results =  realm.where(Image.class).equalTo("objectId",objectId).findAll();
+        RealmResults<Image> results =  realm.where(Image.class).equalTo("_id",objectId).findAll();
+        if(results.size() > 0){
+            Image image = results.get(0);
+            return image;
+        }
+        return null;
+    }
+
+    public static Image queryImageByUrl(Realm realm,String objectId){
+        RealmResults<Image> results =  realm.where(Image.class).equalTo("_id",objectId).findAll();
         if(results.size() > 0){
             Image image = results.get(0);
             return image;
@@ -75,9 +84,9 @@ public class Image extends RealmObject {
         dbItem.setType(goods.getType());
         dbItem.setUrl(goods.getUrl());
         dbItem.setUsed(goods.isUsed());
-        dbItem.setObjectId(goods.getObjectId());
+        dbItem.set_id(goods.get_id());
         dbItem.setCreatedAt(goods.getCreatedAt());
-        dbItem.setUpdatedAt(goods.getUpdatedAt());
+        dbItem.set_ns(goods.get_ns());
         return dbItem;
     }
 
@@ -129,12 +138,12 @@ public class Image extends RealmObject {
         this.used = used;
     }
 
-    public String getObjectId() {
-        return objectId;
+    public String get_id() {
+        return _id;
     }
 
-    public void setObjectId(String objectId) {
-        this.objectId = objectId;
+    public void set_id(String _id) {
+        this._id = _id;
     }
 
     public String getCreatedAt() {
@@ -145,12 +154,12 @@ public class Image extends RealmObject {
         this.createdAt = createdAt;
     }
 
-    public String getUpdatedAt() {
-        return updatedAt;
+    public String get_ns() {
+        return _ns;
     }
 
-    public void setUpdatedAt(String updatedAt) {
-        this.updatedAt = updatedAt;
+    public void set_ns(String updatedAt) {
+        this._ns = updatedAt;
     }
 
     public int getWidth() {

@@ -4,7 +4,7 @@ package com.android.ted.gank.config;
  * Created by Ted on 2015/8/23.
  */
 public class Constants {
-    public static final String GANK_SERVER_IP = "http://gank.avosapps.com/api";
+    public static final String GANK_SERVER_IP = "https://gank.io/api";
 
     //分类数据: http://gank.avosapps.com/api/data/数据类型/请求个数/第几页
     public static final String GANK_CATEGORY_IP = "data/";

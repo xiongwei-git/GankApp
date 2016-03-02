@@ -267,7 +267,7 @@ public class BenefitListFragment extends BaseLoadingFragment implements SwipeRef
         mRealm.beginTransaction();
         if (null != goodsResult && null != goodsResult.getResults()) {
             for (Goods goods : goodsResult.getResults()) {
-                Image image = Image.queryImageById(mRealm, goods.getObjectId());
+                Image image = Image.queryImageById(mRealm, goods.get_id());
                 if(null == image)image = mRealm.createObject(Image.class);
                 Image.updateDbGoods(image,goods);
             }
