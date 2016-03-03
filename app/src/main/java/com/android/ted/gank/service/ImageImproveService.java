@@ -29,6 +29,7 @@ import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
+import io.realm.Sort;
 import java.io.IOException;
 
 import io.realm.Realm;
@@ -65,7 +66,7 @@ public class ImageImproveService extends IntentService{
 
         /**查询所有尺寸为0的图片的数目*/
         int count = realm.where(Image.class).equalTo("width",0)
-                .findAllSorted("position", RealmResults.SORT_ORDER_DESCENDING).size();
+                .findAllSorted("position", Sort.DESCENDING).size();
         Logger.d(count + " image need improve");
 
         if (count == 0) {

@@ -3,7 +3,6 @@ package com.android.ted.gank;
 import android.app.Application;
 import android.content.Context;
 import com.orhanobut.logger.Logger;
-import com.umeng.analytics.MobclickAgent;
 
 public class GankApplication extends Application {
 

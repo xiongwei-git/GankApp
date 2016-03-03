@@ -17,6 +17,7 @@
 
 package com.android.ted.gank.db;
 
+import io.realm.DynamicRealm;
 import io.realm.Realm;
 import io.realm.RealmMigration;
 
@@ -24,8 +25,8 @@ import io.realm.RealmMigration;
  * Created by Ted on 2015/8/27.
  */
 public class GankMigration implements RealmMigration{
-    @Override
-    public long execute(Realm realm, long version) {
-        return 0;
+
+    @Override public void migrate(DynamicRealm realm, long oldVersion, long newVersion) {
+
     }
 }

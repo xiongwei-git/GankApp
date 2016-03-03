@@ -23,6 +23,7 @@ import com.android.ted.gank.model.Goods;
 import io.realm.Realm;
 import io.realm.RealmObject;
 import io.realm.RealmResults;
+import io.realm.Sort;
 import io.realm.annotations.PrimaryKey;
 
 /**
@@ -69,7 +70,7 @@ public class Image extends RealmObject {
 
     public static Image queryFirstZeroImg(Realm realm){
         RealmResults<Image> results =  realm.where(Image.class).equalTo("width",0)
-                .findAllSorted("position", RealmResults.SORT_ORDER_DESCENDING);
+                .findAllSorted("position", Sort.DESCENDING);
         if(results.size() > 0){
             Image image = results.get(0);
             return image;
